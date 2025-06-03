@@ -42,10 +42,11 @@ public abstract class AbstractReportMojo extends AbstractMojo
 	String outputEncoding;
 
 	/**
-	 * A list of report formats to generate. Supported formats are HTML, XML and
-	 * CSV. Defaults to all formats if no values are given.
+	 * A list of report formats to generate. Supported formats are HTML, XML,
+	 * CSV, and FREEMARKER (for Freemarker-based HTML). Defaults to HTML,XML,CSV
+	 * if no values are given.
 	 *
-	 * @since 0.8.7
+	 * @since 0.8.7 (FREEMARKER option added in x.y.z)
 	 */
 	@Parameter(defaultValue = "HTML,XML,CSV")
 	List<ReportFormat> formats;

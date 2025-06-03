@@ -20,6 +20,7 @@ import java.util.Locale;
 import org.jacoco.report.FileMultiReportOutput;
 import org.jacoco.report.IReportVisitor;
 import org.jacoco.report.csv.CSVFormatter;
+import org.jacoco.report.html.FreemarkerFormatter; // Import FreemarkerFormatter
 import org.jacoco.report.html.HTMLFormatter;
 import org.jacoco.report.xml.XMLFormatter;
 
@@ -71,6 +72,27 @@ public enum ReportFormat {
 			csv.setOutputEncoding(mojo.outputEncoding);
 			return csv.createVisitor(new FileOutputStream(
 					new File(mojo.getOutputDirectory(), "jacoco.csv")));
+		}
+	},
+
+	/**
+	 * Multi-page HTML report using Freemarker templates.
+	 */
+	FREEMARKER() {
+		@Override
+		IReportVisitor createVisitor(final AbstractReportMojo mojo,
+				final Locale locale) throws IOException {
+			final FreemarkerFormatter freemarkerFormatter = new FreemarkerFormatter();
+			freemarkerFormatter.setOutputEncoding(mojo.outputEncoding);
+			freemarkerFormatter.setLocale(locale);
+			if (mojo.footer != null) {
+				freemarkerFormatter.setFooterText(mojo.footer);
+			}
+			// Assuming FreemarkerFormatter outputs to the root of mojo.getOutputDirectory()
+			// and manages its own subdirectories (e.g., for resources) within that.
+			final FileMultiReportOutput output = new FileMultiReportOutput(mojo.getOutputDirectory());
+			freemarkerFormatter.init(output);
+			return freemarkerFormatter;
 		}
 	};
 

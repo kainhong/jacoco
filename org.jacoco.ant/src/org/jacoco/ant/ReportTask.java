@@ -51,6 +51,7 @@ import org.jacoco.report.check.Limit;
 import org.jacoco.report.check.Rule;
 import org.jacoco.report.check.RulesChecker;
 import org.jacoco.report.csv.CSVFormatter;
+import org.jacoco.report.html.FreemarkerFormatter; // Import FreemarkerFormatter
 import org.jacoco.report.html.HTMLFormatter;
 import org.jacoco.report.xml.XMLFormatter;
 
@@ -93,6 +94,17 @@ public class ReportTask extends Task {
 			this.tabWidth = tabWidth;
 		}
 
+	}
+
+	/**
+	 * Creates a new Freemarker HTML report element.
+	 *
+	 * @return Freemarker HTML report element
+	 */
+	public FreemarkerFormatterElement createFreemarker() {
+		final FreemarkerFormatterElement element = new FreemarkerFormatterElement();
+		formatters.add(element);
+		return element;
 	}
 
 	/**
@@ -254,6 +266,98 @@ public class ReportTask extends Task {
 			return formatter.createVisitor(output);
 		}
 
+	}
+
+	/**
+	 * Formatter element for Freemarker HTML reports.
+	 * Similar to HTMLFormatterElement.
+	 */
+	public class FreemarkerFormatterElement extends FormatterElement {
+
+		private File destdir;
+		private File destfile;
+		private String footer = "";
+		private String encoding = "UTF-8";
+		private Locale locale = Locale.getDefault();
+
+		/**
+		 * Sets the output directory for the report.
+		 *
+		 * @param destdir
+		 *            output directory
+		 */
+		public void setDestdir(final File destdir) {
+			this.destdir = destdir;
+		}
+
+		/**
+		 * Sets the Zip output file for the report.
+		 *
+		 * @param destfile
+		 *            Zip output file
+		 */
+		public void setDestfile(final File destfile) {
+			this.destfile = destfile;
+		}
+
+		/**
+		 * Sets an optional footer text that will be displayed on every report
+		 * page.
+		 *
+		 * @param text
+		 *            footer text
+		 */
+		public void setFooter(final String text) {
+			this.footer = text;
+		}
+
+		/**
+		 * Sets the output encoding for generated HTML files. Default is UTF-8.
+		 *
+		 * @param encoding
+		 *            output encoding
+		 */
+		public void setEncoding(final String encoding) {
+			this.encoding = encoding;
+		}
+
+		/**
+		 * Sets the locale for generated text output. By default the platform
+		 * locale is used.
+		 *
+		 * @param locale
+		 *            text locale
+		 */
+		public void setLocale(final String locale) {
+			this.locale = parseLocale(locale);
+		}
+
+		@Override
+		public IReportVisitor createVisitor() throws IOException {
+			final IMultiReportOutput output;
+			if (destfile != null) {
+				if (destdir != null) {
+					throw new BuildException(
+							"Either destination directory or file must be supplied for Freemarker report, not both",
+							getLocation());
+				}
+				final FileOutputStream stream = new FileOutputStream(destfile);
+				output = new ZipMultiReportOutput(stream);
+			} else {
+				if (destdir == null) {
+					throw new BuildException(
+							"Destination directory or file must be supplied for Freemarker report",
+							getLocation());
+				}
+				output = new FileMultiReportOutput(destdir);
+			}
+			final FreemarkerFormatter formatter = new FreemarkerFormatter();
+			formatter.setFooterText(footer);
+			formatter.setOutputEncoding(encoding);
+			formatter.setLocale(this.locale); // Use the locale field from this element
+			formatter.init(output); // Initialize the formatter with the output
+			return formatter; // FreemarkerFormatter itself is an IReportVisitor
+		}
 	}
 
 	/**
