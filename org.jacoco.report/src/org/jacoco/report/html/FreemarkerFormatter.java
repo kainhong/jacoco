@@ -155,8 +155,8 @@ public class FreemarkerFormatter implements IReportVisitor, IReportGroupVisitor,
 
         // For now, let's make it behave like a new sub-directory and page.
         String oldPath = this.currentPath;
-        this.currentPath = oldPath + javaNames.getFolderSimpleName(name) + "/";
-        this.output.ensureFolder(this.currentPath);
+        // TODO: Sanitize 'name' if it can contain complex characters unsafe for directory names.
+        this.currentPath = oldPath + name + "/";
 
         this.currentGroupItems = new ArrayList<>();
         // currentGroupCounter would need to be passed or calculated for this specific group
